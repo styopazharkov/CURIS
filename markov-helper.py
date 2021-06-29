@@ -191,7 +191,7 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
         if SE_seed == "random":
             SE_seed =list(range(n))
             random.shuffle(SE_seed)
-            
+
         SE_winner, SE_games = play_SE(G, SE_seed)
         nx.draw_networkx_edges(nxG, pos, edgelist=SE_games, width = 5, arrows=False, edge_color=SE_winner_color, alpha=0.3, min_source_margin=20, min_target_margin=20)
         nx.draw_networkx_nodes(nxG, pos, nodelist = [SE_winner], node_size=200, node_color=SE_winner_color)
@@ -200,9 +200,19 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     plt.axis("off")
     plt.show()
 
-# for _ in range(10):
-#     G = create_random_G(4)
-#     draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed="random")
 
-# G = [[0, 1, 1, 1, 0],[0, 0, 1, 1, 1],[0,0,0,1,1],[0,0,0,0,1],[1, 0, 0, 0, 0]]
+#SOME EXAMPLES: 
+
+# example 1 creates 10 random tournaments, each with 8 players, where the seeding is the standard fair matching if the player numbers were rankings
+"""
+for _ in range(10):
+#     G = create_random_G(8)
+#     draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed = SEED8)
+"""
+
+# example 2 is a tournament with 5 players and random seeding
+"""
+G = [[0, 1, 1, 1, 0],[0, 0, 1, 1, 1],[0, 0, 0, 1, 1],[0, 0, 0, 0, 1],[1, 0, 0, 0, 0]]
 # draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed="random")
+"""
+# 
