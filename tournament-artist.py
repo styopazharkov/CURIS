@@ -1,5 +1,3 @@
-from networkx.algorithms.bipartite.basic import color
-from networkx.drawing.nx_pylab import draw
 import numpy as np
 import random
 import networkx as nx
