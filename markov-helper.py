@@ -215,4 +215,3 @@ for _ in range(10):
 G = [[0, 1, 1, 1, 0],[0, 0, 1, 1, 1],[0, 0, 0, 1, 1],[0, 0, 0, 0, 1],[1, 0, 0, 0, 0]]
 # draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed="random")
 """
-# 
