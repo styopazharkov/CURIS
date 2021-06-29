@@ -15,32 +15,27 @@ def create_random_G(n):
             G[i][j] = 1
     return G
 
-#returns diagonal matrix of copeland scores
-def find_diagCO(G):
-    n = len(G)
-    diagCO = [[0 for _ in range(n)] for _ in range(n)]
-    COlist = [sum(row) for row in G]
-    return np.diag(COlist)
-
-# creates the markov move probability matrix from G and the diagonal copeland score matrix
-def find_Q(G, diagCO):
-    n = len(G)
-    return (G + diagCO)/(n-1)
-
 # finds stable probability distribution from move probability matrix. I.e. finds p st. pQ = p. 
 # From https://stackoverflow.com/questions/31791728/python-code-explanation-for-stationary-distribution-of-a-markov-chain
-def find_p(Q):
+def get_stationary_distribution(Q):
     evals, evecs = np.linalg.eig(Q)
     evec1 = evecs[:,np.isclose(evals, 1)]
     #Since np.isclose will return an array, we've indexed with an array
     #so we still have our 2nd axis.  Get rid of it, since it's only size 1.
     evec1 = evec1[:,0]
-
     stationary = evec1 / evec1.sum()
 
     #eigs finds complex eigenvalues and eigenvectors, so you'll want the real part.
     stationary = stationary.real
     return stationary
+
+def get_co(G):
+    return [sum(row) for row in G]
+
+def get_p(G):
+    diagCO = np.diag(get_co(G))
+    Q = (G + diagCO)/(n-1)
+    return get_stationary_distribution(Q)
 
 # converts from adjacency matrix to adjacency list
 def get_adjacency_list(G):
@@ -53,31 +48,27 @@ def get_adjacency_list(G):
     return lst
 
 #gets coordinates of points around a circle
-def get_pos(n, radius):
+def get_equipos(n):
     pos=[]
     for i in range(n):
-        pos.append((radius * np.cos(2*np.pi*i/n), radius * np.sin(2*np.pi*i/n)))
+        pos.append((np.cos(2*np.pi*i/n), np.sin(2*np.pi*i/n)))
     return pos
 
-
-def get_color_from_probability(probability):
-    rounded_decimal_val = int((probability**0.3)*256)
-    #TODO: fix this function
-    hexval = hex(rounded_decimal_val)[2:]
-    if len(hexval) == 1:
-        hexval = "0"+hexval
-    return "#8000"+hexval
+def get_copeland_set_from_scores(co):
+    maxscore = max(co)
+    return [i for i in range(len(co)) if co[i] == maxscore]
 
 # returns the markov set given the stationary distribution
-def get_markov_set(p):
-    maxprob = max(p)
-    print(p)
-    print(maxprob)
-    return [i for i in range(len(p)) if np.around(p[i]-maxprob, 4)==0]
+def get_markov_set_from_scores(p):
+    maxscore = max(p)
+    return [i for i in range(len(p)) if np.around(p[i]-maxscore, 4)==0]
 
 #gets the single elimination winner of a tournament. 1 is 
-def play_SE(G):
-    remaining = list(range(len(G)))
+def play_SE(G, seed = "default"):
+    if seed == "default":
+        seed = list(range(len(G)))
+    
+    remaining = seed
     played_games = []
     while len(remaining) > 1:
         new = []
@@ -104,7 +95,7 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
         co = get_co(G)  # copeland scores for each vertex
     
     if pos == "default":
-        pos = get_pos(n, 1)
+        pos = get_equipos(n)
     
     if labels == "default":
         labels = {i: i for i in range(n)}
@@ -125,12 +116,12 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
 
     if markov_set_color != None:
         markov_set = get_markov_set_from_scores(p)
-        nx.draw_networkx_nodes(nxG, pos, nodelist = markov_set, node_size=700, node_color="red", edgecolors="black")
+        nx.draw_networkx_nodes(nxG, pos, nodelist = markov_set, node_size=750, node_color="red", edgecolors="black")
 
     if SE_winner_color != None:
-        SE_winner, SE_games = play_SE(G)
+        SE_winner, SE_games = play_SE(G, SE_seed)
         nx.draw_networkx_edges(nxG, pos, edgelist=SE_games, width = 5, arrows=False, edge_color="blue", alpha=0.3, min_source_margin=20, min_target_margin=20)
-        nx.draw_networkx_nodes(nxG, pos, nodelist = [SE_winner], node_size=1000, node_color="blue", edgecolors="black")
+        nx.draw_networkx_nodes(nxG, pos, nodelist = [SE_winner], node_size=500, node_color="blue", edgecolors="black")
 
     nx.draw_networkx_labels(nxG, pos, labels, font_size=10)
     plt.axis("off")
@@ -138,10 +129,4 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
 
 for _ in range(10):
     G = create_random_G(16)
-    diagCO = find_diagCO(G)
-    Q = find_Q(G, diagCO)
-    print(G)
-    p = find_p(Q)
-    draw_tourney(G,p)
-
-#TODO: clean everything up
+    draw_tourney(G)
