@@ -1,3 +1,4 @@
+from networkx.algorithms.bipartite.basic import color
 from networkx.drawing.nx_pylab import draw
 import numpy as np
 import random
@@ -35,7 +36,6 @@ def find_p(Q):
     #so we still have our 2nd axis.  Get rid of it, since it's only size 1.
     evec1 = evec1[:,0]
 
-
     stationary = evec1 / evec1.sum()
 
     #eigs finds complex eigenvalues and eigenvectors, so you'll want the real part.
@@ -66,27 +66,64 @@ def get_color_from_probability(probability):
     hexval = hex(rounded_decimal_val)[2:]
     if len(hexval) == 1:
         hexval = "0"+hexval
-    
     return "#8000"+hexval
+
+# returns the markov set given the stationary distribution
+def get_markov_set(p):
+    maxprob = max(p)
+    print(p)
+    print(maxprob)
+    return [i for i in range(len(p)) if np.around(p[i]-maxprob, 4)==0]
+
+#gets the single elimination winner of a tournament. 1 is 
+def play_SE(G):
+    remaining = list(range(len(G)))
+    played_games = []
+    while len(remaining) > 1:
+        new = []
+        for i in range(0, len(remaining)-1, 2): #the -1 is to avoid crashes for odd n
+            a = remaining[i+1]
+            b = remaining[i]
+            new.append([b,a][int(G[a][b])])
+            played_games.append((a,b))
+        if len(remaining)%2 == 1:
+            new.append(remaining[-1])
+        print(played_games, new)
+        remaining = new
+    return remaining[0], played_games
+
 
 #draws a tournament with the stationary probabilities as the labels
 def draw_tourney(G, p):
     n = len(G)
+    pos = get_pos(n, 1)
+    markov_set = get_markov_set(p)
+    SE_winner, SE_games = play_SE(G)
+    print(pos)
     nxG = nx.MultiDiGraph()
     nxG.add_edges_from(get_adjacency_list(G))
-    pos = get_pos(n, 5)
-    color_map=[get_color_from_probability(p[i]) for i in range(n)]
     labels = {i : np.around(p[i], 3) for i in range(n)}
 
-    plt.figure(figsize=(5,5))
-    nx.draw(nxG, pos, labels = labels, with_labels=True, node_size=1000, node_color="white", width = 1, arrowsize = 10, font_size=10)
+
+    plt.figure(figsize=(7,7))
+    nx.draw_networkx_edges(nxG, pos, width = 1, arrowsize = 10, arrows=True, min_source_margin=20, min_target_margin=20)
+    nx.draw_networkx_edges(nxG, pos, edgelist=SE_games, width = 5, arrows=False, edge_color="blue", alpha=0.3, min_source_margin=20, min_target_margin=20)
+    nx.draw_networkx_nodes(nxG, pos, node_size=1000, node_color="white", edgecolors="black")
+    nx.draw_networkx_nodes(nxG, pos, nodelist = markov_set, node_size=1000, node_color="red", edgecolors="black")
+    if SE_winner not in markov_set:
+        nx.draw_networkx_nodes(nxG, pos, nodelist = [SE_winner], node_size=1000, node_color="blue", edgecolors="black")
+    else:
+        nx.draw_networkx_nodes(nxG, pos, nodelist = [SE_winner], node_size=1000, node_color="red", edgecolors="blue", linewidths=4)
+    nx.draw_networkx_labels(nxG, pos, labels, font_size=10)
+    plt.axis("off")
     plt.show()
 
+for _ in range(10):
+    G = create_random_G(16)
+    diagCO = find_diagCO(G)
+    Q = find_Q(G, diagCO)
+    print(G)
+    p = find_p(Q)
+    draw_tourney(G,p)
 
-G = create_random_G(9)
-diagCO = find_diagCO(G)
-Q = find_Q(G, diagCO)
-print(G)
-p = find_p(Q)
-draw_tourney(G,p)
-
+#TODO: clean everything up
