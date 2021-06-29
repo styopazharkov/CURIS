@@ -5,6 +5,7 @@ import random
 import networkx as nx
 import matplotlib.pyplot as plt 
 
+SEED8 = [0, 7, 3, 4, 1, 6, 2, 5]
 
 #creates random directed graph matrix. i, j is 1 if i beats j. 0 otherwise
 def create_random_G(n):
@@ -30,9 +31,10 @@ def get_stationary_distribution(Q):
     return stationary
 
 def get_co(G):
-    return [sum(row) for row in G]
+    return [int(sum(row)) for row in G]
 
 def get_p(G):
+    n = len(G)
     diagCO = np.diag(get_co(G))
     Q = (G + diagCO)/(n-1)
     return get_stationary_distribution(Q)
@@ -79,10 +81,8 @@ def play_SE(G, seed = "default"):
             played_games.append((a,b))
         if len(remaining)%2 == 1:
             new.append(remaining[-1])
-        print(played_games, new)
         remaining = new
     return remaining[0], played_games
-
 
 #draws a tournament with the following options: [TODO: describe options]
 def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, labels = "default", SE_seed = "default", pos = "default"):
@@ -116,17 +116,23 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
 
     if markov_set_color != None:
         markov_set = get_markov_set_from_scores(p)
-        nx.draw_networkx_nodes(nxG, pos, nodelist = markov_set, node_size=750, node_color="red", edgecolors="black")
+        nx.draw_networkx_nodes(nxG, pos, nodelist = markov_set, node_size=500, node_color = markov_set_color)
 
     if SE_winner_color != None:
+        if SE_seed == "default":
+            SE_seed =list(range(n))
+        if SE_seed == "random":
+            SE_seed =list(range(n))
+            random.shuffle(SE_seed)
+        #TODO: would be nice ot have the standard tournament matching as one of the built in options here
         SE_winner, SE_games = play_SE(G, SE_seed)
-        nx.draw_networkx_edges(nxG, pos, edgelist=SE_games, width = 5, arrows=False, edge_color="blue", alpha=0.3, min_source_margin=20, min_target_margin=20)
-        nx.draw_networkx_nodes(nxG, pos, nodelist = [SE_winner], node_size=500, node_color="blue", edgecolors="black")
+        nx.draw_networkx_edges(nxG, pos, edgelist=SE_games, width = 5, arrows=False, edge_color=SE_winner_color, alpha=0.3, min_source_margin=20, min_target_margin=20)
+        nx.draw_networkx_nodes(nxG, pos, nodelist = [SE_winner], node_size=200, node_color=SE_winner_color)
 
     nx.draw_networkx_labels(nxG, pos, labels, font_size=10)
     plt.axis("off")
     plt.show()
 
 for _ in range(10):
-    G = create_random_G(16)
-    draw_tourney(G)
+    G = create_random_G(4)
+    draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed="random")
