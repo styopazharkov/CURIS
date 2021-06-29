@@ -205,10 +205,11 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
 
 # example 1 creates 10 random tournaments, each with 8 players, where the seeding is the standard fair matching if the player numbers were rankings
 """
-for _ in range(10):
-#     G = create_random_G(8)
-#     draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed = SEED8)
+for _ in range(20):
+    G = create_random_G(8)
+    draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue")
 """
+
 
 # example 2 is a tournament with 5 players and random seeding
 """
@@ -220,4 +221,28 @@ G = [[0, 1, 1, 1, 0],[0, 0, 1, 1, 1],[0, 0, 0, 1, 1],[0, 0, 0, 0, 1],[1, 0, 0, 0
 """
 G = create_random_G(13)
 draw_tourney(G, labels= None, node_size= 200)
+"""
+
+# example 4 is a graph where the markov set does not intersect with the copeland set. 
+"""
+G = [
+    [0] + 10*[1] + 5 * [0],
+    [0]*2 + [1,1,1] + [0]*3 + [1]*8,
+    [0]*3 + [1,1,1] + [0]*2 + [1]*8,
+    [0]*4 + [1,1,1] + [0]*1 + [1]*8,
+    [0]*5 + [1,1,1] + [0]*0 + [1]*8,
+    [0]+[1]+ [0]*4 + [1,1] + [1]*8,
+    [0]+[1,1]+ [0]*4 + [1] + [1]*8,
+    [0]+[1,1,1]+ [0]*4 + [1]*8,
+
+    [0]+[0]*7+[0]+[1]*4+[0]*3,
+    [0]+[0]*7+[0]*2+[1]*4+[0]*2,
+    [0]+[0]*7+[0]*3+[1]*4+[0]*1,
+    [1]+[0]*7+[0]*4+[1]*4+[0]*0,
+    [1]+[0]*7+[0]*5+[1]*3,
+    [1]+[0]*7+[1]*1+[0]*5+[1]*2,
+    [1]+[0]*7+[1]*2+[0]*5+[1]*1,
+    [1]+[0]*7+[1]*3+[0]*5+[1]*0
+]
+draw_tourney(G,  copeland_set_color="yellow", markov_set_color="red", labels="markov")
 """
