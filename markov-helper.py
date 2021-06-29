@@ -93,27 +93,45 @@ def play_SE(G):
     return remaining[0], played_games
 
 
-#draws a tournament with the stationary probabilities as the labels
-def draw_tourney(G, p):
-    n = len(G)
-    pos = get_pos(n, 1)
-    markov_set = get_markov_set(p)
-    SE_winner, SE_games = play_SE(G)
-    print(pos)
+#draws a tournament with the following options: [TODO: describe options]
+def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, labels = "default", SE_seed = "default", pos = "default"):
+    
+    #the following section calculates needed variables only if the settings require them
+    n = len(G) #number of vertices
+    if labels == "markov" or markov_set_color != None:
+        p = get_p(G) # markov probabilities for each vertex
+    if labels == "copeland" or copeland_set_color != None:
+        co = get_co(G)  # copeland scores for each vertex
+    
+    if pos == "default":
+        pos = get_pos(n, 1)
+    
+    if labels == "default":
+        labels = {i: i for i in range(n)}
+    elif labels == "copeland":
+        labels = {i : co[i] for i in range(n)}
+    elif labels == "markov":
+        labels = {i : np.around(p[i], 3) for i in range(n)}
+    
     nxG = nx.MultiDiGraph()
     nxG.add_edges_from(get_adjacency_list(G))
-    labels = {i : np.around(p[i], 3) for i in range(n)}
-
-
     plt.figure(figsize=(7,7))
     nx.draw_networkx_edges(nxG, pos, width = 1, arrowsize = 10, arrows=True, min_source_margin=20, min_target_margin=20)
-    nx.draw_networkx_edges(nxG, pos, edgelist=SE_games, width = 5, arrows=False, edge_color="blue", alpha=0.3, min_source_margin=20, min_target_margin=20)
     nx.draw_networkx_nodes(nxG, pos, node_size=1000, node_color="white", edgecolors="black")
-    nx.draw_networkx_nodes(nxG, pos, nodelist = markov_set, node_size=1000, node_color="red", edgecolors="black")
-    if SE_winner not in markov_set:
+
+    if copeland_set_color != None:
+        copeland_set = get_copeland_set_from_scores(co)
+        nx.draw_networkx_nodes(nxG, pos, nodelist = copeland_set, node_size = 1000, node_color = copeland_set_color, edgecolors = "black")
+
+    if markov_set_color != None:
+        markov_set = get_markov_set_from_scores(p)
+        nx.draw_networkx_nodes(nxG, pos, nodelist = markov_set, node_size=700, node_color="red", edgecolors="black")
+
+    if SE_winner_color != None:
+        SE_winner, SE_games = play_SE(G)
+        nx.draw_networkx_edges(nxG, pos, edgelist=SE_games, width = 5, arrows=False, edge_color="blue", alpha=0.3, min_source_margin=20, min_target_margin=20)
         nx.draw_networkx_nodes(nxG, pos, nodelist = [SE_winner], node_size=1000, node_color="blue", edgecolors="black")
-    else:
-        nx.draw_networkx_nodes(nxG, pos, nodelist = [SE_winner], node_size=1000, node_color="red", edgecolors="blue", linewidths=4)
+
     nx.draw_networkx_labels(nxG, pos, labels, font_size=10)
     plt.axis("off")
     plt.show()
