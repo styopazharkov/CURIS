@@ -136,16 +136,17 @@ def play_SE(G, seed = "default"):
     return remaining[0], played_games
 
 
-def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, labels = "default", SE_seed = "default", pos = "default"):
+def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, labels = "default", SE_seed = "default", pos = "default", node_size = 1000):
     """
     Parameters:
         G - a tournament graph matrix. This can be a list of lists or a numpy array.
         copeland_set_color - color for the Copeland set. If left as none, copeland set will not be calculated.
         SE_win_color - color for the single elimination bracket winner and played games highlight. If left as none, single elimination will not be played.
         markov_set_color - color for the Markov set. If left as none, Markov set will not be calculated
-        labels - labels for the graph. Set to "default", "copeland", or "markov", or create custom label list.
+        labels - labels for the graph. Set to "default", "copeland", or "markov", or create custom label list. Set to None for no labels.
         SE_seed - seeding for the SE tournament. Has no effect if SE_win_color is set to None. Set to "default", "random", or create a custom seeding.
         pos - the positions of the vertices in the tournament graph. Set to "default" or create a custom list of coordinate tuples.
+        node_size - the size of the nodes. It's set to 1000 by default.
 
     This function draws a tournamnet graph. The default seeding has the players in order. The random seeding is uniformly random. The default vertex positions is equidistantly placed around a unit circle. The default labels is the number of the players. Copeland labels are the Copeland scores. Markov labels are the Markov scores. Make sure that any custom seeding, positions, or labels have the right length (same as number of vertices) and format. The colored circles for the tournament solutions are of different sizes so that they can be seen when overlapping. 
     """
@@ -172,16 +173,16 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     nxG = nx.MultiDiGraph()
     nxG.add_edges_from(get_adjacency_list(G))
     plt.figure(figsize=(7,7)) # 7, 7 is the size of the output window
-    nx.draw_networkx_edges(nxG, pos, width = 1, arrowsize = 10, arrows=True, min_source_margin=20, min_target_margin=20)
-    nx.draw_networkx_nodes(nxG, pos, node_size=1000, node_color="white", edgecolors="black")
+    nx.draw_networkx_edges(nxG, pos, width = 1, arrowsize = 10, arrows=True, min_source_margin=10+node_size//100, min_target_margin=10+node_size//100)
+    nx.draw_networkx_nodes(nxG, pos, node_size=node_size, node_color="white", edgecolors="black")
 
     if copeland_set_color != None:
         copeland_set = get_copeland_set_from_scores(co)
-        nx.draw_networkx_nodes(nxG, pos, nodelist = copeland_set, node_size = 1000, node_color = copeland_set_color, edgecolors = "black")
+        nx.draw_networkx_nodes(nxG, pos, nodelist = copeland_set, node_size = node_size, node_color = copeland_set_color, edgecolors = "black")
 
     if markov_set_color != None:
         markov_set = get_markov_set_from_scores(p)
-        nx.draw_networkx_nodes(nxG, pos, nodelist = markov_set, node_size=500, node_color = markov_set_color)
+        nx.draw_networkx_nodes(nxG, pos, nodelist = markov_set, node_size=node_size//2, node_color = markov_set_color)
 
     if SE_winner_color != None:
         if SE_seed == "default":
@@ -192,9 +193,10 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
 
         SE_winner, SE_games = play_SE(G, SE_seed)
         nx.draw_networkx_edges(nxG, pos, edgelist=SE_games, width = 5, arrows=False, edge_color=SE_winner_color, alpha=0.3, min_source_margin=20, min_target_margin=20)
-        nx.draw_networkx_nodes(nxG, pos, nodelist = [SE_winner], node_size=200, node_color=SE_winner_color)
+        nx.draw_networkx_nodes(nxG, pos, nodelist = [SE_winner], node_size=node_size//5, node_color=SE_winner_color)
 
-    nx.draw_networkx_labels(nxG, pos, labels, font_size=10)
+    if labels != None:
+        nx.draw_networkx_labels(nxG, pos, labels, font_size=10)
     plt.axis("off")
     plt.show()
 
@@ -212,4 +214,10 @@ for _ in range(10):
 """
 G = [[0, 1, 1, 1, 0],[0, 0, 1, 1, 1],[0, 0, 0, 1, 1],[0, 0, 0, 0, 1],[1, 0, 0, 0, 0]]
 # draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed="random")
+"""
+
+# example 3 is a random vanilla tournament with 13 players
+"""
+G = create_random_G(13)
+draw_tourney(G, labels= None, node_size= 200)
 """
