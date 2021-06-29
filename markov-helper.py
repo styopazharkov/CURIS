@@ -133,6 +133,9 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     plt.axis("off")
     plt.show()
 
-for _ in range(10):
-    G = create_random_G(4)
-    draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed="random")
+# for _ in range(10):
+#     G = create_random_G(4)
+#     draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed="random")
+
+# G = [[0, 1, 1, 1, 0],[0, 0, 1, 1, 1],[0,0,0,1,1],[0,0,0,0,1],[1, 0, 0, 0, 0]]
+# draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed="random")

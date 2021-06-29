@@ -1,3 +1,5 @@
+# NOTE: This file is a mess and the result isn't that useful. It approximates the approximation ratio of a single elimination tounament on a uniform distribution over all graphs by taking big samples. I'm really only keeping it here in case I need some of the logic I implemented later -styopa
+
 import random
 import math
 
@@ -59,4 +61,4 @@ def runtest(m, ntrials):
     # average ratio; ratio of averages
     print(ratiosum/ntrials, "which may be about", selectedscoresum/maxscoresum, ". The accuracy here is about", ratiosum/ntrials/selectedscoresum*maxscoresum)
 
-runtest(3, 10000000)
+runtest(3, 1000)
