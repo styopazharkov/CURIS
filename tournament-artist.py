@@ -2,6 +2,7 @@ import numpy as np
 import random
 import networkx as nx
 import matplotlib.pyplot as plt 
+import queue
 
 SEED8 = [0, 7, 3, 4, 1, 6, 2, 5]
 
@@ -132,6 +133,37 @@ def play_SE(G, seed = "default"):
         remaining = new
     return remaining[0], played_games
 
+def play_PingPong(G, numgames = 100, seed = "default"):
+    n = len(G)
+    if seed == "default":
+        seed = list(range(n))
+
+    current_player = seed[0]
+    line = queue.Queue()
+    for i in seed[1:]:
+        line.put(i)
+    
+    scores = {i: 0 for i in range(n)}
+    games = []
+
+    for game in range(numgames):
+        opponent = line.get()
+        if G[current_player][opponent]:
+            games.append((current_player, opponent))
+            scores[current_player] += 1
+            line.put(opponent)
+        else:
+            games.append((opponent, current_player))
+            scores[opponent] += 1
+            line.put(current_player)
+            current_player = opponent
+
+    top_score = max(scores.values())
+    winners = [i for i in range(n) if scores[i] == top_score]
+    scorelist =  [scores[i] for i in range(n)]
+    return winners, games, scorelist
+
+
 def get_adjacency_list(G):
     """
     Parameters:
@@ -159,19 +191,32 @@ def get_equipos(n):
         pos.append((np.cos(2*np.pi*i/n), np.sin(2*np.pi*i/n)))
     return pos
 
-def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, labels = "default", SE_seed = "default", pos = "default", node_size = 1000):
+def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, pingpong_winner_color = None, labels = "default", SE_seed = "default", pingpong_seed = "default", pingpong_numgames = "default", pos = "default", node_size = 1000):
     """
     Parameters:
         G - a tournament graph matrix. This can be a list of lists or a numpy array.
+
         copeland_set_color - color for the Copeland set. If left as none, copeland set will not be calculated.
+        
         SE_win_color - color for the single elimination bracket winner and played games highlight. If left as none, single elimination will not be played.
+
         markov_set_color - color for the Markov set. If left as none, Markov set will not be calculated
-        labels - labels for the graph. Set to "default", "copeland", or "markov", or create custom label list. Set to None for no labels.
+
+        pingpong_winners_color - color of the pingpong winners of the tournament
+
+        labels - labels for the graph. Set to "default", "copeland", "markov", or "pingpong" or create custom label list. Set to None for no labels.
+
         SE_seed - seeding for the SE tournament. Has no effect if SE_win_color is set to None. Set to "default", "random", or create a custom seeding.
+
+        pingpong_seed - seeding for the ping pong tournament. Has no effect if pingpong_win_color is set to None. Set to "default", "random", or create a custom seeding.
+
+        pingpong_numgames - number of games for pingpong tournament. The default is 2 times the number of players
+
         pos - the positions of the vertices in the tournament graph. Set to "default" or create a custom list of coordinate tuples.
+
         node_size - the size of the nodes. It's set to 1000 by default.
 
-    This function draws a tournamnet graph. The default seeding has the players in order. The random seeding is uniformly random. The default vertex positions is equidistantly placed around a unit circle. The default labels is the number of the players. Copeland labels are the Copeland scores. Markov labels are the Markov scores. Make sure that any custom seeding, positions, or labels have the right length (same as number of vertices) and format. The colored circles for the tournament solutions are of different sizes so that they can be seen when overlapping. 
+    This function draws a tournamnet graph. The default seeding has the players in order. The random seeding is uniformly random. The default vertex positions is equidistantly placed around a unit circle. The default labels is the number of the players. Copeland labels are the Copeland scores. Markov labels are the Markov scores. Pingpong labels are the pingpong scores. Make sure that any custom seeding, positions, or labels have the right length (same as number of vertices) and format. The colored circles for the tournament solutions are of different sizes so that they can be seen when overlapping. 
     """
 
     #the following section calculates needed variables only if the settings require them
@@ -180,7 +225,23 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
         p = get_p(G) # markov probabilities for each vertex
     if labels == "copeland" or copeland_set_color != None:
         co = get_co(G)  # copeland scores for each vertex
-    
+    if SE_winner_color != None:
+        if SE_seed == "default":
+            SE_seed =list(range(n))
+        if SE_seed == "random":
+            SE_seed =list(range(n))
+            random.shuffle(SE_seed)
+        SE_winner, SE_games = play_SE(G, SE_seed)
+    if labels == "pingpong" or pingpong_winner_color != None:
+        if pingpong_seed == "default":
+            pingpong_seed =list(range(n))
+        if pingpong_seed == "random":
+            pingpong_seed =list(range(n))
+            random.shuffle(pingpong_seed)
+        if pingpong_numgames == "default":
+            pingpong_numgames = n*2
+        pingpong_winners, pingpong_games, pingpong_scores = play_PingPong(G, seed=pingpong_seed, numgames=pingpong_numgames)
+
     #sets default positions
     if pos == "default":
         pos = get_equipos(n)
@@ -192,6 +253,8 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
         labels = {i : co[i] for i in range(n)}
     elif labels == "markov":
         labels = {i : np.around(p[i], 3) for i in range(n)}
+    elif labels == "pingpong":
+        labels = {i : pingpong_scores[i] for i in range(n)}
     
     nxG = nx.MultiDiGraph()
     nxG.add_edges_from(get_adjacency_list(G))
@@ -208,15 +271,13 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
         nx.draw_networkx_nodes(nxG, pos, nodelist = markov_set, node_size=node_size//2, node_color = markov_set_color)
 
     if SE_winner_color != None:
-        if SE_seed == "default":
-            SE_seed =list(range(n))
-        if SE_seed == "random":
-            SE_seed =list(range(n))
-            random.shuffle(SE_seed)
-
-        SE_winner, SE_games = play_SE(G, SE_seed)
         nx.draw_networkx_edges(nxG, pos, edgelist=SE_games, width = 5, arrows=False, edge_color=SE_winner_color, alpha=0.3, min_source_margin=20, min_target_margin=20)
         nx.draw_networkx_nodes(nxG, pos, nodelist = [SE_winner], node_size=node_size//5, node_color=SE_winner_color)
+
+    if pingpong_winner_color != None:
+        nx.draw_networkx_edges(nxG, pos, edgelist=pingpong_games, width = 5, arrows=False, edge_color=pingpong_winner_color, alpha=0.2, min_source_margin=20, min_target_margin=20)
+        nx.draw_networkx_nodes(nxG, pos, nodelist = pingpong_winners, node_size=node_size//7, node_color=pingpong_winner_color)
+
 
     if labels != None:
         nx.draw_networkx_labels(nxG, pos, labels, font_size=10)
