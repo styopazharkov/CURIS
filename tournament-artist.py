@@ -21,6 +21,31 @@ def create_random_G(n):
             G[i][j] = 1
     return G
 
+def create_cyclone_G(n):
+    """
+    Parameters:
+        n - number of players in the tournament.
+
+    This function creates a cyclone tournament. I.e a tourney where everyone beats the next (n-1)/2 players. If n is even, then the first n/2 players beat n/2 players and the last n/2 players beat n/2 - 1 players.
+    """
+    G = np.zeros((n,n))
+    for row in range(n):
+        for col in range(n):
+            # complicated line; the second and third part basically just makes sure only the first n/2 playes have outdegree n/2 when n is even
+            if (col-row-1) % n < (n - 1)/2 and not (n % 2 == 0 and  row - col == n/2): 
+                G[row][col]= 1
+    return G
+
+def flip_edge(G, i, j):
+    """
+    Parameters:
+        G - a tournament graph matrix. This can be a list of lists or a numpy array.
+        i, j - vertices of G (must be numbers in range(len(G)))
+
+    This funtion modifies G so that the edge from i to j is flipped. The vertices i and j can be passed in in any order.
+    """
+    G[i][j], G[j][i] = G[j][i], G[i][j]
+
 def get_stationary_distribution(Q):
     """
     Parameters:
@@ -244,3 +269,7 @@ G = [
 ]
 draw_tourney(G,  copeland_set_color="yellow", markov_set_color="red", labels="markov")
 """
+
+G = create_cyclone_G(5)
+flip_edge(G, 0, 1)
+draw_tourney(G, labels="markov")
