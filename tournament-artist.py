@@ -240,9 +240,10 @@ G = [[0, 1, 1, 1, 0],[0, 0, 1, 1, 1],[0, 0, 0, 1, 1],[0, 0, 0, 0, 1],[1, 0, 0, 0
 # draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed="random")
 """
 
-# example 3 is a random vanilla tournament with 13 players
+# example 3 is a vanilla cyclone tournament with 13 players and one edge flipped
 """
-G = create_random_G(13)
+G = create_cyclone_G(13)
+flip_edge(G, 0, 1)
 draw_tourney(G, labels= None, node_size= 200)
 """
 
@@ -270,6 +271,3 @@ G = [
 draw_tourney(G,  copeland_set_color="yellow", markov_set_color="red", labels="markov")
 """
 
-G = create_cyclone_G(5)
-flip_edge(G, 0, 1)
-draw_tourney(G, labels="markov")
