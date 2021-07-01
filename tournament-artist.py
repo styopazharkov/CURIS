@@ -133,36 +133,54 @@ def play_SE(G, seed = "default"):
         remaining = new
     return remaining[0], played_games
 
-def play_PingPong(G, numgames = 100, seed = "default"):
+def play_PingPong(G, seed = "default", numgames = 100, passon = "random"):
+    """
+    Parameters:
+        G - a tournament graph matrix. This can be a list of lists or a numpy array.
+        seed - a seeding arrangement for the players. This must be either "default" or a list of the intigers in the range(0,n) in some order.
+        numgames - number of games to play in the pingpong tournament
+        passon - method of determining the next player to replace the loser. Set to "line" or to "random"
+
+    This function takes in a tournament matrix and a seeding and plays a ping pong tournament. It returns a list of winners, a list of played games, and a list of scores of the players. In each the winner stays. The loser is replaced either by the next person in line (if passon is set to "line") or by a random opponent (if passon is set to "random"). The winners are the players who won the most games.
+    """
     n = len(G)
     if seed == "default":
         seed = list(range(n))
 
     current_player = seed[0]
-    line = queue.Queue()
-    for i in seed[1:]:
-        line.put(i)
-    
     scores = {i: 0 for i in range(n)}
     games = []
 
-    for game in range(numgames):
-        opponent = line.get()
-        if G[current_player][opponent]:
-            games.append((current_player, opponent))
-            scores[current_player] += 1
-            line.put(opponent)
-        else:
-            games.append((opponent, current_player))
-            scores[opponent] += 1
-            line.put(current_player)
-            current_player = opponent
+    if passon == "line":
+        line = queue.Queue()
+        for i in seed[1:]:
+            line.put(i)
+        for game in range(numgames):
+            opponent = line.get()
+            if G[current_player][opponent]:
+                games.append((current_player, opponent))
+                scores[current_player] += 1
+                line.put(opponent)
+            else:
+                games.append((opponent, current_player))
+                scores[opponent] += 1
+                line.put(current_player)
+                current_player = opponent
+    elif passon == "random":
+        for game in range(numgames):
+            opponent = random.randint(0,n-1)
+            if G[current_player][opponent]:
+                games.append((current_player, opponent))
+                scores[current_player] += 1
+            else:
+                games.append((opponent, current_player))
+                scores[opponent] += 1
+                current_player = opponent
 
     top_score = max(scores.values())
     winners = [i for i in range(n) if scores[i] == top_score]
     scorelist =  [scores[i] for i in range(n)]
     return winners, games, scorelist
-
 
 def get_adjacency_list(G):
     """
@@ -191,7 +209,7 @@ def get_equipos(n):
         pos.append((np.cos(2*np.pi*i/n), np.sin(2*np.pi*i/n)))
     return pos
 
-def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, pingpong_winner_color = None, labels = "default", SE_seed = "default", pingpong_seed = "default", pingpong_numgames = "default", pos = "default", node_size = 1000):
+def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, pingpong_winner_color = None, labels = "default", SE_seed = "default", pingpong_seed = "default", pingpong_numgames = "default", pingpong_passon = "default", pos = "default", node_size = 1000):
     """
     Parameters:
         G - a tournament graph matrix. This can be a list of lists or a numpy array.
@@ -240,7 +258,9 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
             random.shuffle(pingpong_seed)
         if pingpong_numgames == "default":
             pingpong_numgames = n*2
-        pingpong_winners, pingpong_games, pingpong_scores = play_PingPong(G, seed=pingpong_seed, numgames=pingpong_numgames)
+        if pingpong_passon == "default":
+            pingpong_passon = "random"
+        pingpong_winners, pingpong_games, pingpong_scores = play_PingPong(G, seed=pingpong_seed, numgames=pingpong_numgames, passon=pingpong_passon)
 
     #sets default positions
     if pos == "default":
@@ -332,3 +352,10 @@ G = [
 draw_tourney(G,  copeland_set_color="yellow", markov_set_color="red", labels="markov")
 """
 
+# TRASH FOR TESTING BELOW THIS LINE: 
+
+# for _ in range(10):
+#     G = create_random_G(8)
+#     draw_tourney(G, pingpong_winner_color="green", labels= "pingpong", pingpong_seed="random", pingpong_numgames=800, SE_winner_color="blue", markov_set_color="red")
+# flip_edge(G, 0, 1)
+# draw_tourney(G, labels="copeland")
