@@ -62,33 +62,6 @@ def get_p(G):
     Q = (G + diagCO)/(n-1)
     return get_stationary_distribution(Q)
 
-def get_adjacency_list(G):
-    """
-    Parameters:
-        G - a tournament graph matrix. This can be a list of lists or a numpy array.
-
-    This function converts a tournament graph matric into a list of edges for the tournament. The edges are represented as tuples. An element (i, j) corresponds to an edge from i to j (i.e. i beats j).
-    """
-    n = len(G)
-    lst = []
-    for i in range(n):
-        for j in range(n):
-            if G[i][j] == 1:
-                lst.append((i,j))
-    return lst
-
-def get_equipos(n):
-    """
-    Parameters:
-        n - number of points
-    
-    This function takes in a number n returns a list of coordinates for n points equidistantly spaced out on the unit circle (centerd at 0). This is useful for drawing graphs with n vertices.
-    """
-    pos=[]
-    for i in range(n):
-        pos.append((np.cos(2*np.pi*i/n), np.sin(2*np.pi*i/n)))
-    return pos
-
 def get_copeland_set_from_scores(co):
     """
     Parameters:
@@ -108,7 +81,6 @@ def get_markov_set_from_scores(p):
     """
     maxscore = max(p)
     return [i for i in range(len(p)) if np.around(p[i]-maxscore, 4)==0]
-
 
 def play_SE(G, seed = "default"):
     """
@@ -135,6 +107,32 @@ def play_SE(G, seed = "default"):
         remaining = new
     return remaining[0], played_games
 
+def get_adjacency_list(G):
+    """
+    Parameters:
+        G - a tournament graph matrix. This can be a list of lists or a numpy array.
+
+    This function converts a tournament graph matric into a list of edges for the tournament. The edges are represented as tuples. An element (i, j) corresponds to an edge from i to j (i.e. i beats j).
+    """
+    n = len(G)
+    lst = []
+    for i in range(n):
+        for j in range(n):
+            if G[i][j] == 1:
+                lst.append((i,j))
+    return lst
+
+def get_equipos(n):
+    """
+    Parameters:
+        n - number of points
+    
+    This function takes in a number n returns a list of coordinates for n points equidistantly spaced out on the unit circle (centerd at 0). This is useful for drawing graphs with n vertices.
+    """
+    pos=[]
+    for i in range(n):
+        pos.append((np.cos(2*np.pi*i/n), np.sin(2*np.pi*i/n)))
+    return pos
 
 def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, labels = "default", SE_seed = "default", pos = "default", node_size = 1000):
     """
