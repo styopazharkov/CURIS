@@ -46,26 +46,6 @@ def flip_edge(G, i, j):
     """
     G[i][j], G[j][i] = G[j][i], G[i][j]
 
-def get_stationary_distribution(Q):
-    """
-    Parameters:
-        Q - A transition probability matrix for a graph. This can be a list of lists or a numpy array.
-
-    This function takes in a Markov transition probability matrix and computes the stationary probability distribution on the states. The output is a numpy list of the stationary probabilities at each state (the ith element in the output corresponds to state i). In the input, row i, column j corresonds to the probability that state j changes to state i. All this function is doing is finding a vector p such that Qp = p. It works by using numpy's eigenvalue/eigenvector function.
-
-    The implementation is mostly taken from https://stackoverflow.com/questions/31791728/python-code-explanation-for-stationary-distribution-of-a-markov-chain
-    """
-    evals, evecs = np.linalg.eig(Q)
-    evec1 = evecs[:,np.isclose(evals, 1)]
-    #Since np.isclose will return an array, we've indexed with an array
-    #so we still have our 2nd axis.  Get rid of it, since it's only size 1.
-    evec1 = evec1[:,0]
-    stationary = evec1 / evec1.sum()
-
-    #eigs finds complex eigenvalues and eigenvectors, so we want the real part.
-    stationary = stationary.real
-    return stationary
-
 def get_co(G):
     """
     Parameters:
@@ -86,6 +66,26 @@ def get_p(G):
     diagCO = np.diag(get_co(G))
     Q = (G + diagCO)/(n-1)
     return get_stationary_distribution(Q)
+
+def get_stationary_distribution(Q):
+    """
+    Parameters:
+        Q - A transition probability matrix for a graph. This can be a list of lists or a numpy array.
+
+    This function takes in a Markov transition probability matrix and computes the stationary probability distribution on the states. The output is a numpy list of the stationary probabilities at each state (the ith element in the output corresponds to state i). In the input, row i, column j corresonds to the probability that state j changes to state i. All this function is doing is finding a vector p such that Qp = p. It works by using numpy's eigenvalue/eigenvector function.
+
+    The implementation is mostly taken from https://stackoverflow.com/questions/31791728/python-code-explanation-for-stationary-distribution-of-a-markov-chain
+    """
+    evals, evecs = np.linalg.eig(Q)
+    evec1 = evecs[:,np.isclose(evals, 1)]
+    #Since np.isclose will return an array, we've indexed with an array
+    #so we still have our 2nd axis.  Get rid of it, since it's only size 1.
+    evec1 = evec1[:,0]
+    stationary = evec1 / evec1.sum()
+
+    #eigs finds complex eigenvalues and eigenvectors, so we want the real part.
+    stationary = stationary.real
+    return stationary
 
 def get_copeland_set_from_scores(co):
     """
