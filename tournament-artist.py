@@ -22,12 +22,12 @@ def create_random_G(n):
             G[i][j] = 1
     return G
 
-def create_cyclone_G(n):
+def create_regular_G(n):
     """
     Parameters:
         n - number of players in the tournament.
 
-    This function creates a cyclone tournament. I.e a tourney where everyone beats the next (n-1)/2 players. If n is even, then the first n/2 players beat n/2 players and the last n/2 players beat n/2 - 1 players.
+    This function creates a regular tournament. I.e a tourney where everyone beats the next (n-1)/2 players. If n is even, then the first n/2 players beat n/2 players and the last n/2 players beat n/2 - 1 players.
     """
     G = np.zeros((n,n))
     for row in range(n):
@@ -36,6 +36,26 @@ def create_cyclone_G(n):
             if (col-row-1) % n < (n - 1)/2 and not (n % 2 == 0 and  row - col == n/2): 
                 G[row][col]= 1
     return G
+
+def create_strong0_G(n):
+    """
+    Parameters:
+        n - number of players in the tournament. Must be a power of 2.
+
+    This function creates a strong0 tournament. I.e a tourney where i beats j if i>j except 0 beats just enough strong players to win an SE bracket
+    """
+    G = np.zeros((n,n))
+    for row in range(1, n):
+        for col in range(row):
+            G[row][col] = 1
+    i = 1
+    while i < n:
+        flip_edge(G, i, 0)
+        i = (i << 1) + 1
+    return G
+
+
+            
 
 def flip_edge(G, i, j):
     """
@@ -321,9 +341,9 @@ G = [[0, 1, 1, 1, 0],[0, 0, 1, 1, 1],[0, 0, 0, 1, 1],[0, 0, 0, 0, 1],[1, 0, 0, 0
 # draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed="random")
 """
 
-# example 3 is a vanilla cyclone tournament with 13 players and one edge flipped
+# example 3 is a vanilla regular tournament with 13 players and one edge flipped
 """
-G = create_cyclone_G(13)
+G = create_regular_G(13)
 flip_edge(G, 0, 1)
 draw_tourney(G, labels= None, node_size= 200)
 """
@@ -356,6 +376,14 @@ draw_tourney(G,  copeland_set_color="yellow", markov_set_color="red", labels="ma
 
 # for _ in range(10):
 #     G = create_random_G(8)
-#     draw_tourney(G, pingpong_winner_color="green", labels= "pingpong", pingpong_seed="random", pingpong_numgames=800, SE_winner_color="blue", markov_set_color="red")
+#     draw_tourney(G, pingpong_winner_color="green", labels= "pingpong", pingpong_seed="random", pingpong_passon="line", pingpong_numgames=800, SE_winner_color="blue", markov_set_color="red")
 # flip_edge(G, 0, 1)
 # draw_tourney(G, labels="copeland")
+
+G = create_strong0_G(16)
+draw_tourney(G, SE_winner_color= "blue", labels="markov", markov_set_color="red")
+# p = get_p(G)
+# print(max(p))
+# print(p[0])
+
+
