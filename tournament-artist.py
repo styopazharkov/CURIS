@@ -55,6 +55,13 @@ def create_strong0_G(n):
     return G
 
 def tourney_product(schemeG, Glist):
+    """
+    Parameters:
+        schemeG - a tournament graph matrix. The scheme for combining all of the tournaments
+        Glist - a list of tournament graph matrices to take the product of
+
+    This function takes the product of all of the tournaments in Glist with respect to the schemeG tournament and returns the result. In other words, this function returns a new tournament graph that is created by replacing each vertex in schemeG with the corresponding tournament in Glist.
+    """
     assert(len(schemeG) == len(Glist))
     n = sum(len(elemG) for elemG in Glist)
 
@@ -408,12 +415,3 @@ draw_tourney(G,  copeland_set_color="yellow", markov_set_color="red", labels="ma
 # p = get_p(G)
 # print(max(p))
 # print(p[0])
-
-
-schemeG = create_regular_G(2)
-G1 = create_regular_G(2)
-G2 = create_random_G(8)
-G3 = create_random_G(8)
-G = tourney_product(schemeG, [G2, G3])
-for i in range(10):
-    draw_tourney(G, labels="markov", SE_winner_color="blue", markov_set_color="red", copeland_set_color="yellow", SE_seed="random")
