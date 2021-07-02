@@ -54,8 +54,31 @@ def create_strong0_G(n):
         i = (i << 1) + 1
     return G
 
+def tourney_product(schemeG, Glist):
+    assert(len(schemeG) == len(Glist))
+    n = sum(len(elemG) for elemG in Glist)
 
-            
+    curtime = 0
+    epochmap = {}
+    epochstartmap = {}
+    for epoch in range(len(Glist)):
+        epochstartmap[epoch] = curtime
+        epochlength = len(Glist[epoch])
+        for i in range(epochlength):
+            epochmap[curtime+i] = epoch
+        curtime += epochlength
+
+    G = np.zeros((n,n))
+    for i in range(n):
+        for j in range(n):
+            iepoch = epochmap[i]
+            jepoch = epochmap[j]
+            if iepoch == jepoch:
+                epochstart = epochstartmap[iepoch]
+                G[i][j] = Glist[iepoch][i - epochstart][j - epochstart]
+            else:
+                G[i][j] = schemeG[iepoch][jepoch]
+    return G
 
 def flip_edge(G, i, j):
     """
@@ -380,10 +403,17 @@ draw_tourney(G,  copeland_set_color="yellow", markov_set_color="red", labels="ma
 # flip_edge(G, 0, 1)
 # draw_tourney(G, labels="copeland")
 
-G = create_strong0_G(16)
-draw_tourney(G, SE_winner_color= "blue", labels="markov", markov_set_color="red")
+# G = create_strong0_G(16)
+# draw_tourney(G, SE_winner_color= "blue", labels="markov", markov_set_color="red")
 # p = get_p(G)
 # print(max(p))
 # print(p[0])
 
 
+schemeG = create_regular_G(2)
+G1 = create_regular_G(2)
+G2 = create_random_G(8)
+G3 = create_random_G(8)
+G = tourney_product(schemeG, [G2, G3])
+for i in range(10):
+    draw_tourney(G, labels="markov", SE_winner_color="blue", markov_set_color="red", copeland_set_color="yellow", SE_seed="random")
