@@ -3,8 +3,11 @@ import random
 import networkx as nx
 import matplotlib.pyplot as plt 
 import queue
+from sympy import Matrix
+from pprint import pprint
 
 from numpy.core.fromnumeric import product
+import sympy
 
 SEED8 = [0, 7, 3, 4, 1, 6, 2, 5]
 
@@ -55,6 +58,23 @@ def create_strong0_G(n):
         flip_edge(G, i, 0)
         i = (i << 1) + 1
     return G
+
+def create_cyclone_flip_Q(n, delta, flip_mode = "first"):
+    """
+    Creates Q matrix for odd n. Note that the output is n-1 times the actual matrix so that all values are integers
+    """
+    G = create_regular_G(n)
+
+    if flip_mode == "first":
+        flipped = range(-int(delta * n), 0)
+    if flip_mode == "random":
+        flipped = random.choices(range(-(n-1)//2, 0), k=int(delta * n))
+    for i in flipped:
+        flip_edge(G, i, 0)
+    diagCO = np.diag(get_co(G))
+    Q = (G + diagCO) # everything is multiplied by n-1 so that they are integers
+    Q -= np.identity(n) * (n-1)
+    return Q
 
 def tourney_product(schemeG, Glist):
     """
@@ -380,89 +400,12 @@ flip_edge(G, 0, 1)
 draw_tourney(G, labels= None, node_size= 200)
 """
 
-# example 4 is a graph where the markov set does not intersect with the copeland set. 
 
-# G = [
-#     [0] + 10*[1] + 5 * [0],
-#     [0]*2 + [1,1,1] + [0]*3 + [1]*8,
-#     [0]*3 + [1,1,1] + [0]*2 + [1]*8,
-#     [0]*4 + [1,1,1] + [0]*1 + [1]*8,
-#     [0]*5 + [1,1,1] + [0]*0 + [1]*8,
-#     [0]+[1]+ [0]*4 + [1,1] + [1]*8,
-#     [0]+[1,1]+ [0]*4 + [1] + [1]*8,
-#     [0]+[1,1,1]+ [0]*4 + [1]*8,
+n = 17
+Q = create_cyclone_flip_Q(17, 1/3, flip_mode="random")
+print(Q)
+Qprime = [[int(Q[i][j]) for j in range(n)] for i in range(n)]
+mx = Matrix(Qprime)
+rmx = mx.rref()[0]
+pprint(rmx)
 
-#     [0]+[0]*7+[0]+[1]*4+[0]*3,
-#     [0]+[0]*7+[0]*2+[1]*4+[0]*2,
-#     [0]+[0]*7+[0]*3+[1]*4+[0]*1,
-#     [1]+[0]*7+[0]*4+[1]*4+[0]*0,
-#     [1]+[0]*7+[0]*5+[1]*3,
-#     [1]+[0]*7+[1]*1+[0]*5+[1]*2,
-#     [1]+[0]*7+[1]*2+[0]*5+[1]*1,
-#     [1]+[0]*7+[1]*3+[0]*5+[1]*0
-# ]
-# draw_tourney(G,  copeland_set_color="yellow", markov_set_color="red", labels="markov")
-
-
-# TRASH FOR TESTING BELOW THIS LINE: 
-
-# for _ in range(10):
-#     G = create_random_G(8)
-#     draw_tourney(G, pingpong_winner_color="green", labels= "pingpong", pingpong_seed="random", pingpong_passon="line", pingpong_numgames=800, SE_winner_color="blue", markov_set_color="red")
-# flip_edge(G, 0, 1)
-# draw_tourney(G, labels="copeland")
-
-# G = create_strong0_G(16)
-# draw_tourney(G, SE_winner_color= "blue", labels="markov", markov_set_color="red")
-# p = get_p(G)
-# print(max(p))
-# print(p[0])
-
-# n = 2229
-# G = create_regular_G(n)
-# for i in range(0, int(1*(n-1)//3)):
-#     flip_edge(G, 0, -i)
-# p = get_p(G)
-# print(max(p[1:]), min(p[1:]))
-# print(max(p[1:])/min(p[1:]))
-# draw_tourney(G, labels="markov")
-
-# n = 10001
-# H = create_regular_G(n)
-
-# for d in range(20, 40):
-#     delta = d/100
-#     r = 1/(1/(0.5-delta)-1)
-#     G = np.copy(H)
-#     for i in range(int(delta * n)):
-#         flip_edge(G, 0, -i)
-#     winnercount = 0
-#     losercount = 0 
-#     seed =list(range(n))
-#     trials = 100
-#     for _ in range(trials):
-#         random.shuffle(seed)
-#         winner, games = play_SE(G, seed= seed)
-#         if winner == 0:
-#             winnercount+=1
-#         else:
-#             losercount += 1
-#     print(delta, ":", r * losercount/trials + 1 * winnercount/ trials)
-
-# a, b, c = 180, 600, 180
-# n = a+b+c
-# schemeG = create_regular_G(3)
-# G1, G2, G3 = create_random_G(a), create_random_G(b), create_random_G(c)
-# G = tourney_product(schemeG, [G1, G2, G3])
-# # G = create_random_G(n)
-# p = get_p(G)
-# marks = p[get_markov_set_from_scores(p)[0]]
-# trials = 1000
-# winnercount = 0
-# seed =list(range(n))
-# for _ in range(trials):
-#     random.shuffle(seed)
-#     winner, games = play_SE(G, seed= seed)
-#     r = p[winner]/marks
-#     winnercount += r
-# print(winnercount)
