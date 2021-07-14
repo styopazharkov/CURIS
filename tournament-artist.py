@@ -12,6 +12,7 @@ import sympy
 SEED8 = [0, 7, 3, 4, 1, 6, 2, 5]
 
 #NOTE: All tournaments must have at least 2 players
+#TODO: decide on notation for what Q is. I use it both as (G+diagCO)/(n-1) and as G+diagCO-Id*(n-1)
 
 def create_random_G(n):
     """
@@ -27,12 +28,12 @@ def create_random_G(n):
             G[i][j] = 1
     return G
 
-def create_regular_G(n):
+def create_cyclone_G(n):
     """
     Parameters:
         n - number of players in the tournament.
 
-    This function creates a regular tournament. I.e a tourney where everyone beats the next (n-1)/2 players. If n is even, then the first n/2 players beat n/2 players and the last n/2 players beat n/2 - 1 players.
+    This function creates a cyclone tournament. I.e a tourney where everyone beats the next (n-1)/2 players. If n is even, then the first n/2 players beat n/2 players and the last n/2 players beat n/2 - 1 players.
     """
     G = np.zeros((n,n))
     for row in range(n):
@@ -59,16 +60,38 @@ def create_strong0_G(n):
         i = (i << 1) + 1
     return G
 
+def create_cylone_flip_G(n, delta, flip_mode = "first", seed = "default"):
+    """
+    creates a cyclone tournament with a strong z vertex. a delta fraction of edges are flipped (all would have been inedges). The seed is the ordering of the graph. Set seed to default or to random. Set flip_mode to first or to random.
+    """
+    G = create_cyclone_G(n)
+    if flip_mode == "first":
+        flipped = range(-int(delta * n), 0)
+    if flip_mode == "random":
+        flipped = np.random.choice(range(-(n-1)//2, 0), int(delta * n), replace=False)
+    for i in flipped:
+        flip_edge(G, i, 0)
+    
+    if seed == "random":
+        seed = list(range(n))
+        random.shuffle(seed)
+        randomG = np.zeros((n,n))
+        for i in range(n):
+            for j in range(n):
+                randomG[i][j] = G[seed[i]][seed[j]]
+        G = randomG
+    return G
+
 def create_cyclone_flip_Q(n, delta, flip_mode = "first"):
     """
     Creates Q matrix for odd n. Note that the output is n-1 times the actual matrix so that all values are integers
     """
-    G = create_regular_G(n)
+    G = create_cyclone_G(n)
 
     if flip_mode == "first":
         flipped = range(-int(delta * n), 0)
     if flip_mode == "random":
-        flipped = random.choices(range(-(n-1)//2, 0), k=int(delta * n))
+        flipped = np.random.choice(range(-(n-1)//2, 0), int(delta * n), replace=False)
     for i in flipped:
         flip_edge(G, i, 0)
     diagCO = np.diag(get_co(G))
@@ -254,6 +277,29 @@ def play_PingPong(G, seed = "default", numgames = 100, passon = "random"):
     scorelist =  [scores[i] for i in range(n)]
     return winners, games, scorelist
 
+def play_cyclone_border(G, k):
+    """
+    this function does the following algorithm:
+    for every player, query how it does against the next k players and the previous k players. The winner is the one that wins the most games.
+    """
+    n = len(G)
+    winners = []
+    maxscore = 0
+    for i in range(n):
+        score = 0
+        for j in range(i+1, i+k+1):
+            if G[i][j%n] == 1:
+                score+=1
+        for j in range(i-k, i):
+            if G[i][j%n] == 1:
+                score+=1
+        if score == maxscore:
+            winners.append(i)
+        elif score > maxscore:
+            maxscore = score
+            winners = [i]
+    return winners
+
 def get_adjacency_list(G):
     """
     Parameters:
@@ -293,7 +339,7 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
         markov_set_color - color for the Markov set. If left as none, Markov set will not be calculated
 
         pingpong_winners_color - color of the pingpong winners of the tournament
-
+        
         labels - labels for the graph. Set to "default", "copeland", "markov", or "pingpong" or create custom label list. Set to None for no labels.
 
         SE_seed - seeding for the SE tournament. Has no effect if SE_win_color is set to None. Set to "default", "random", or create a custom seeding.
@@ -393,19 +439,44 @@ G = [[0, 1, 1, 1, 0],[0, 0, 1, 1, 1],[0, 0, 0, 1, 1],[0, 0, 0, 0, 1],[1, 0, 0, 0
 # draw_tourney(G, markov_set_color="red", labels="markov", copeland_set_color="yellow", SE_winner_color="blue", SE_seed="random")
 """
 
-# example 3 is a vanilla regular tournament with 13 players and one edge flipped
+# example 3 is a vanilla cyclone tournament with 13 players and one edge flipped
 """
-G = create_regular_G(13)
+G = create_cyclone_G(13)
 flip_edge(G, 0, 1)
 draw_tourney(G, labels= None, node_size= 200)
 """
 
+#for showing that second eigenvalue converges to a constant
+"""for trial in range(1):
+    n = 101
+    delta = 1/3
+    print("expected:", delta-1/2)
+    create_random_G(n)
+    Q = create_cyclone_flip_Q(n, delta, flip_mode="first")/(n-1)+np.identity(n)
+    evals, evecs = np.linalg.eig(Q)
+    revals = [np.around(i.real, 4) for i in evals if np.isreal(i)]
+    revecs = evecs[:,np.isreal(evals)].real
+    revecs = [np.around(revecs[:,i], 6) for i in range(len(revecs[0]))]
+    revec1 = revecs[0]
+    revec1 = revec1/revec1.sum()
+    # print(Q)
+    # print("evals:", evals)
+    # print("revals:", revals)
+    # print("evecs:", evecs)
+    for i in range(2):
+        print(revals[i],":", revecs[i], sum(revecs[i]))"""
 
-n = 17
-Q = create_cyclone_flip_Q(17, 1/3, flip_mode="random")
-print(Q)
-Qprime = [[int(Q[i][j]) for j in range(n)] for i in range(n)]
+# for converting Q to a row echelon format
+"""Qprime = [[int(Q[i][j]) for j in range(n)] for i in range(n)]
 mx = Matrix(Qprime)
 rmx = mx.rref()[0]
 pprint(rmx)
+"""
 
+G = create_cylone_flip_G(7, 1/3, flip_mode="first", seed="random")
+# print(G)
+# draw_tourney(G, labels="markov", markov_set_color="red")
+
+G2 = create_cyclone_G(7)
+winners = play_cyclone_border(G2, 2)
+print(winners)
