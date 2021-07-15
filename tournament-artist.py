@@ -8,6 +8,7 @@ from pprint import pprint
 
 from numpy.core.fromnumeric import product
 import sympy
+from sympy.matrices.dense import zeros
 
 SEED8 = [0, 7, 3, 4, 1, 6, 2, 5]
 
@@ -60,9 +61,9 @@ def create_strong0_G(n):
         i = (i << 1) + 1
     return G
 
-def create_cylone_flip_G(n, delta, flip_mode = "first", seed = "default"):
+def create_cylone_flip_G(n, delta, flip_mode = "first", seed = "default", zero_z = False):
     """
-    creates a cyclone tournament with a strong z vertex. a delta fraction of edges are flipped (all would have been inedges). The seed is the ordering of the graph. Set seed to default or to random. Set flip_mode to first or to random.
+    creates a cyclone tournament with a strong z vertex. a delta fraction of edges are flipped (all would have been inedges). The seed is the ordering of the graph. Set seed to default or to random. Set flip_mode to first or to random. If zero_z is set to true, the strong vertex is 0.
     """
     G = create_cyclone_G(n)
     if flip_mode == "first":
@@ -73,8 +74,13 @@ def create_cylone_flip_G(n, delta, flip_mode = "first", seed = "default"):
         flip_edge(G, i, 0)
     
     if seed == "random":
-        seed = list(range(n))
-        random.shuffle(seed)
+        if zero_z:
+            seed = list(range(1,n))
+            random.shuffle(seed)
+            seed = [0] + seed
+        else:
+            seed = list(range(n))
+            random.shuffle(seed)
         randomG = np.zeros((n,n))
         for i in range(n):
             for j in range(n):
@@ -277,7 +283,7 @@ def play_PingPong(G, seed = "default", numgames = 100, passon = "random"):
     scorelist =  [scores[i] for i in range(n)]
     return winners, games, scorelist
 
-def play_cyclone_border(G, k):
+def play_border(G, k):
     """
     this function does the following algorithm:
     for every player, query how it does against the next k players and the previous k players. The winner is the one that wins the most games.
@@ -327,7 +333,7 @@ def get_equipos(n):
         pos.append((np.cos(2*np.pi*i/n), np.sin(2*np.pi*i/n)))
     return pos
 
-def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, pingpong_winner_color = None, labels = "default", SE_seed = "default", pingpong_seed = "default", pingpong_numgames = "default", pingpong_passon = "default", pos = "default", node_size = 1000):
+def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, pingpong_winner_color = None, border_winner_color = None, labels = "default", SE_seed = "default", pingpong_seed = "default", pingpong_numgames = "default", pingpong_passon = "default", border_k = 0, pos = "default", node_size = 1000):
     """
     Parameters:
         G - a tournament graph matrix. This can be a list of lists or a numpy array.
@@ -339,7 +345,9 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
         markov_set_color - color for the Markov set. If left as none, Markov set will not be calculated
 
         pingpong_winners_color - color of the pingpong winners of the tournament
-        
+
+        border_winners_color - the color of the cyclone winners of the tournament
+
         labels - labels for the graph. Set to "default", "copeland", "markov", or "pingpong" or create custom label list. Set to None for no labels.
 
         SE_seed - seeding for the SE tournament. Has no effect if SE_win_color is set to None. Set to "default", "random", or create a custom seeding.
@@ -347,6 +355,8 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
         pingpong_seed - seeding for the ping pong tournament. Has no effect if pingpong_win_color is set to None. Set to "default", "random", or create a custom seeding.
 
         pingpong_numgames - number of games for pingpong tournament. The default is 2 times the number of players
+
+        border_k - the k value for the border tournament
 
         pos - the positions of the vertices in the tournament graph. Set to "default" or create a custom list of coordinate tuples.
 
@@ -379,7 +389,8 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
         if pingpong_passon == "default":
             pingpong_passon = "random"
         pingpong_winners, pingpong_games, pingpong_scores = play_PingPong(G, seed=pingpong_seed, numgames=pingpong_numgames, passon=pingpong_passon)
-
+    if border_winner_color != None:
+        border_winners = play_border(G, border_k)
     #sets default positions
     if pos == "default":
         pos = get_equipos(n)
@@ -415,6 +426,9 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     if pingpong_winner_color != None:
         nx.draw_networkx_edges(nxG, pos, edgelist=pingpong_games, width = 5, arrows=False, edge_color=pingpong_winner_color, alpha=0.2, min_source_margin=20, min_target_margin=20)
         nx.draw_networkx_nodes(nxG, pos, nodelist = pingpong_winners, node_size=node_size//7, node_color=pingpong_winner_color)
+
+    if border_winner_color != None:
+        nx.draw_networkx_nodes(nxG, pos, nodelist = border_winners, node_size=node_size//7, node_color=border_winner_color)
 
 
     if labels != None:
@@ -473,10 +487,12 @@ rmx = mx.rref()[0]
 pprint(rmx)
 """
 
-G = create_cylone_flip_G(7, 1/3, flip_mode="first", seed="random")
 # print(G)
 # draw_tourney(G, labels="markov", markov_set_color="red")
-
-G2 = create_cyclone_G(7)
-winners = play_cyclone_border(G2, 2)
-print(winners)
+accuracy = 0
+for i in range(100):
+    G = create_cylone_flip_G(301, 3/7, flip_mode="first", seed="random", zero_z=True)
+    winners = play_border(G, 6)
+    if 0 in winners:
+        accuracy+=1
+print(accuracy)
