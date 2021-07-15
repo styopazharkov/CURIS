@@ -487,12 +487,19 @@ rmx = mx.rref()[0]
 pprint(rmx)
 """
 
-# print(G)
-# draw_tourney(G, labels="markov", markov_set_color="red")
-accuracy = 0
+#test that the border alogirthm does bad on radnomly seeded cyclone flip tournament
+"""accuracy = 0
 for i in range(100):
     G = create_cylone_flip_G(301, 3/7, flip_mode="first", seed="random", zero_z=True)
     winners = play_border(G, 6)
     if 0 in winners:
         accuracy+=1
-print(accuracy)
+print(accuracy)"""
+
+n=11
+delta = 1/4
+Q = create_cyclone_flip_Q(n, delta, flip_mode="random") + np.identity(n)*(n-1)
+vector = [1, 1, 0, 0, 0, 0, 0, 0, -1, -1, 0]
+print(Q)
+print(Q.dot(vector)/(n-1))
+print(1/2+delta)
