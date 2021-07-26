@@ -409,7 +409,7 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     nxG.add_edges_from(get_adjacency_list(G))
     plt.figure(figsize=(7,7)) # 7, 7 is the size of the output window
     nx.draw_networkx_edges(nxG, pos, width = 1, arrowsize = 10, arrows=True, min_source_margin=10+node_size//100, min_target_margin=10+node_size//100)
-    nx.draw_networkx_nodes(nxG, pos, node_size=node_size, node_color="white", edgecolors="black")
+   
 
     if copeland_set_color != None:
         copeland_set = get_copeland_set_from_scores(co)
@@ -496,6 +496,7 @@ for i in range(100):
         accuracy+=1
 print(accuracy)"""
 
+"""
 n=11
 delta = 1/4
 Q = create_cyclone_flip_Q(n, delta, flip_mode="random") + np.identity(n)*(n-1)
@@ -503,3 +504,4 @@ vector = [1, 1, 0, 0, 0, 0, 0, 0, -1, -1, 0]
 print(Q)
 print(Q.dot(vector)/(n-1))
 print(1/2+delta)
+"""
