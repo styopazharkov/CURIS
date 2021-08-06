@@ -505,3 +505,30 @@ print(Q)
 print(Q.dot(vector)/(n-1))
 print(1/2+delta)
 """
+
+def find_kth_real_eigenstuff(Q, k):
+    evals, evecs = np.linalg.eig(np.transpose(Q))
+    revals = [np.around(i.real, 4) for i in evals if np.isreal(i)]
+    revecs = evecs[:,np.isreal(evals)].real
+    revecs = [revecs[:,i] for i in range(len(revecs[0]))]
+    print(evals)
+    return revals[k-1], revecs[k-1]
+
+def round_vector(v, accuracy):
+    return [np.around(i, accuracy) for i in v]
+
+def infinity_normalize_vector(v):
+    mxelem = max(v, key = lambda x: abs(x))
+    return [i/mxelem for i in v]
+
+n = 11
+delta = 0
+print("expected second eigenvalue:", delta-1/2)
+create_random_G(n)
+Q = create_cyclone_flip_Q(n, delta, flip_mode="random")/(n-1)
+print(Q)
+eval2, evec2 = find_kth_real_eigenstuff(Q, 1)
+Qevec2 = Q.dot(evec2)
+evec2 = infinity_normalize_vector(evec2)
+evec2 = round_vector(evec2, 3)
+# print(eval2, evec2)
