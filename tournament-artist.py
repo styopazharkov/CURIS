@@ -540,3 +540,5 @@ evec2 = infinity_normalize_vector(evec2)
 evec2 = round_vector(evec2, 3)
 # print(eval2, evec2)
 """
+
+#TODO: change the names of the function to fit the notation we use. Q is no longer Q potentially
