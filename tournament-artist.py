@@ -70,6 +70,8 @@ def create_cylone_flip_G(n, delta, flip_mode = "first", seed = "default", zero_z
         flipped = range(-int(delta * n), 0)
     if flip_mode == "random":
         flipped = np.random.choice(range(-(n-1)//2, 0), int(delta * n), replace=False)
+    else:
+        flipped = flip_mode
     for i in flipped:
         flip_edge(G, i, 0)
     
@@ -98,6 +100,9 @@ def create_cyclone_flip_Q(n, delta, flip_mode = "first"):
         flipped = range(-int(delta * n), 0)
     if flip_mode == "random":
         flipped = np.random.choice(range(-(n-1)//2, 0), int(delta * n), replace=False)
+    else:
+        flipped = flip_mode
+
     for i in flipped:
         flip_edge(G, i, 0)
     diagCO = np.diag(get_co(G))
@@ -333,7 +338,7 @@ def get_equipos(n):
         pos.append((np.cos(2*np.pi*i/n), np.sin(2*np.pi*i/n)))
     return pos
 
-def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, pingpong_winner_color = None, border_winner_color = None, labels = "default", SE_seed = "default", pingpong_seed = "default", pingpong_numgames = "default", pingpong_passon = "default", border_k = 0, pos = "default", node_size = 1000):
+def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, pingpong_winner_color = None, border_winner_color = None, labels = "default", SE_seed = "default", pingpong_seed = "default", pingpong_numgames = "default", pingpong_passon = "default", border_k = 0, pos = "default", node_size = 1000, node_color="white"):
     """
     Parameters:
         G - a tournament graph matrix. This can be a list of lists or a numpy array.
@@ -397,7 +402,7 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     
     # sets built-in label options
     if labels == "default":
-        labels = {i: i for i in range(n)}
+        labels = {i: i+1 for i in range(n)}
     elif labels == "copeland":
         labels = {i : co[i] for i in range(n)}
     elif labels == "markov":
@@ -409,6 +414,7 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     nxG.add_edges_from(get_adjacency_list(G))
     plt.figure(figsize=(7,7)) # 7, 7 is the size of the output window
     nx.draw_networkx_edges(nxG, pos, width = 1, arrowsize = 10, arrows=True, min_source_margin=10+node_size//100, min_target_margin=10+node_size//100)
+    nx.draw_networkx_nodes(nxG, pos, nodelist = range(n), node_size=node_size, node_color=node_color, edgecolors="black")
    
 
     if copeland_set_color != None:
@@ -506,6 +512,7 @@ print(Q.dot(vector)/(n-1))
 print(1/2+delta)
 """
 
+"""
 def find_kth_real_eigenstuff(Q, k):
     evals, evecs = np.linalg.eig(np.transpose(Q))
     revals = [np.around(i.real, 4) for i in evals if np.isreal(i)]
@@ -532,3 +539,7 @@ Qevec2 = Q.dot(evec2)
 evec2 = infinity_normalize_vector(evec2)
 evec2 = round_vector(evec2, 3)
 # print(eval2, evec2)
+"""
+
+G = create_cylone_flip_G(15, 0.2, flip_mode = [])
+draw_tourney(G, node_size =600)
