@@ -540,6 +540,3 @@ evec2 = infinity_normalize_vector(evec2)
 evec2 = round_vector(evec2, 3)
 # print(eval2, evec2)
 """
-
-G = create_cylone_flip_G(15, 0.2, flip_mode = [])
-draw_tourney(G, node_size =600)
