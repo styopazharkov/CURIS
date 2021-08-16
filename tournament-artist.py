@@ -90,7 +90,7 @@ def create_cylone_flip_G(n, delta, flip_mode = "first", seed = "default", zero_z
         G = randomG
     return G
 
-def create_cyclone_flip_Q(n, delta, flip_mode = "first"):
+def create_flipped_cyclone_L(n, delta, flip_mode = "first"):
     """
     Creates Q matrix for odd n. Note that the output is n-1 times the actual matrix so that all values are integers
     """
@@ -107,8 +107,8 @@ def create_cyclone_flip_Q(n, delta, flip_mode = "first"):
         flip_edge(G, i, 0)
     diagCO = np.diag(get_co(G))
     Q = (G + diagCO) # everything is multiplied by n-1 so that they are integers
-    Q -= np.identity(n) * (n-1)
-    return Q
+    L = Q - np.identity(n) * (n-1)
+    return L
 
 def tourney_product(schemeG, Glist):
     """
@@ -472,7 +472,7 @@ draw_tourney(G, labels= None, node_size= 200)
     delta = 1/3
     print("expected:", delta-1/2)
     create_random_G(n)
-    Q = create_cyclone_flip_Q(n, delta, flip_mode="first")/(n-1)+np.identity(n)
+    Q = create_flipped_cyclone_Q(n, delta, flip_mode="first")/(n-1)+np.identity(n)
     evals, evecs = np.linalg.eig(Q)
     revals = [np.around(i.real, 4) for i in evals if np.isreal(i)]
     revecs = evecs[:,np.isreal(evals)].real
@@ -505,7 +505,7 @@ print(accuracy)"""
 """
 n=11
 delta = 1/4
-Q = create_cyclone_flip_Q(n, delta, flip_mode="random") + np.identity(n)*(n-1)
+Q = create_flipped_cyclone_Q(n, delta, flip_mode="random") + np.identity(n)*(n-1)
 vector = [1, 1, 0, 0, 0, 0, 0, 0, -1, -1, 0]
 print(Q)
 print(Q.dot(vector)/(n-1))
@@ -532,7 +532,7 @@ n = 11
 delta = 0
 print("expected second eigenvalue:", delta-1/2)
 create_random_G(n)
-Q = create_cyclone_flip_Q(n, delta, flip_mode="random")/(n-1)
+Q = create_flipped_cyclone_Q(n, delta, flip_mode="random")/(n-1)
 print(Q)
 eval2, evec2 = find_kth_real_eigenstuff(Q, 1)
 Qevec2 = Q.dot(evec2)
