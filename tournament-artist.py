@@ -452,6 +452,15 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     plt.axis("off")
     plt.show()
 
+def copeland_winner_markov_unbalance(G):
+    """
+    This function takes in a graph and computes the ratio of the copeland winner's markov score to the best markov score
+    """
+    co = get_co(G)
+    connor = get_copeland_set_from_scores(co)[0]
+    p = get_p(G)
+    return p[connor]/max(p)
+
 
 #SOME EXAMPLES: 
 
@@ -551,19 +560,26 @@ evec2 = round_vector(evec2, 3)
 # print(eval2, evec2)
 """
 
-s = 30
+"""
+# if k=0, then i and j have the same copeland score, but j's markov score is s times bigger
+s = 5
+k = 7
 G_I = create_cyclone_G(s)
 G_J = create_cyclone_G(s-1)
+G_K = create_cyclone_G(k)
 
-Gscheme = create_ordered_G(4)
+Gscheme = create_ordered_G(5)
 flip_edge(Gscheme, 0, 1)
 flip_edge(Gscheme, 0, 3)
 flip_edge(Gscheme, 1, 2)
 flip_edge(Gscheme, 2, 3)
+flip_edge(Gscheme, 2, 4)
 
 G_i = create_ordered_G(1)
 G_j = create_ordered_G(1)
-G = tourney_product(Gscheme, [G_i, G_j, G_I, G_J])
+G = tourney_product(Gscheme, [G_i, G_j, G_I, G_J, G_K])
 p = get_p(G)
 print(p[1]/p[0])
-draw_tourney(G, labels="copeland")
+G_J = create_cyclone_G(s-1)
+draw_tourney(G, labels="markov")"""
+
