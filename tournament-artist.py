@@ -3,6 +3,7 @@ import random
 import networkx as nx
 import matplotlib.pyplot as plt 
 import queue
+from numpy.core.shape_base import block
 from sympy import Matrix
 from pprint import pprint
 
@@ -11,9 +12,9 @@ import sympy
 from sympy.matrices.dense import zeros
 
 SEED8 = [0, 7, 3, 4, 1, 6, 2, 5]
+FIGURE_LABEL = 1
 
 #NOTE: All tournaments must have at least 2 players
-#TODO: decide on notation for what Q is. I use it both as (G+diagCO)/(n-1) and as G+diagCO-Id*(n-1)
 
 def create_random_G(n):
     """
@@ -348,7 +349,7 @@ def get_equipos(n):
         pos.append((np.cos(2*np.pi*i/n), np.sin(2*np.pi*i/n)))
     return pos
 
-def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, pingpong_winner_color = None, border_winner_color = None, labels = "default", SE_seed = "default", pingpong_seed = "default", pingpong_numgames = "default", pingpong_passon = "default", border_k = 0, pos = "default", node_size = 1000, node_color="white"):
+def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_set_color = None, pingpong_winner_color = None, border_winner_color = None, labels = "default", SE_seed = "default", pingpong_seed = "default", pingpong_numgames = "default", pingpong_passon = "default", border_k = 0, pos = "default", node_size = 1000, node_color="white", figure_number = 1):
     """
     Parameters:
         G - a tournament graph matrix. This can be a list of lists or a numpy array.
@@ -373,7 +374,7 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
 
         border_k - the k value for the border tournament
 
-        pos - the positions of the vertices in the tournament graph. Set to "default" or create a custom list of coordinate tuples.
+        pos - the positions of the vertices in the tournament graph. Set to "default" or create a custom list of coordinate tuples. Set to "markov" or "copeland" to have the vertices ordered by markov or copeland score, respectively.
 
         node_size - the size of the nodes. It's set to 1000 by default.
 
@@ -382,9 +383,10 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
 
     #the following section calculates needed variables only if the settings require them
     n = len(G) #number of vertices
-    if labels == "markov" or markov_set_color != None:
+
+    if labels == "markov" or markov_set_color != None or pos == "markov":
         p = get_p(G) # markov probabilities for each vertex
-    if labels == "copeland" or copeland_set_color != None:
+    if labels == "copeland" or copeland_set_color != None or pos == "copeland":
         co = get_co(G)  # copeland scores for each vertex
     if SE_winner_color != None:
         if SE_seed == "default":
@@ -409,6 +411,15 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     #sets default positions
     if pos == "default":
         pos = get_equipos(n)
+    elif pos == "markov":
+        _pos = get_equipos(n)
+        order = sorted(range(n), key = lambda i : p[i], reverse= True)
+        pos = [_pos[order[i]] for i in range(n)]
+    elif pos == "copeland":
+        _pos = get_equipos(n)
+        order = sorted(range(n), key = lambda i : co[i], reverse= True)
+        pos = [_pos[order[i]] for i in range(n)]
+
     
     # sets built-in label options
     if labels == "default":
@@ -422,7 +433,8 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     
     nxG = nx.MultiDiGraph()
     nxG.add_edges_from(get_adjacency_list(G))
-    plt.figure(figsize=(7,7)) # 7, 7 is the size of the output window
+    plt.figure(figure_number, figsize=(7,7)) # 7, 7 is the size of the output window
+
     nx.draw_networkx_edges(nxG, pos, width = 1, arrowsize = 10, arrows=True, min_source_margin=10+node_size//100, min_target_margin=10+node_size//100)
     nx.draw_networkx_nodes(nxG, pos, nodelist = range(n), node_size=node_size, node_color=node_color, edgecolors="black")
    
@@ -450,7 +462,7 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     if labels != None:
         nx.draw_networkx_labels(nxG, pos, labels, font_size=10)
     plt.axis("off")
-    plt.show()
+
 
 def copeland_winner_markov_unbalance(G):
     """
@@ -582,4 +594,25 @@ p = get_p(G)
 print(p[1]/p[0])
 G_J = create_cyclone_G(s-1)
 draw_tourney(G, labels="markov")"""
+
+n = 7
+G = create_random_G(n)
+trials = 10000
+best_unbalance = copeland_winner_markov_unbalance(G)
+print(best_unbalance)
+draw_tourney(G, labels="markov",copeland_set_color="yellow", markov_set_color="red", figure_number=1)
+
+for i in range(trials): 
+    i = random.randint(0, n-1)
+    j = (i + random.randint(1, n-1)) % n
+    flip_edge(G, i, j)
+    unbalance = copeland_winner_markov_unbalance(G)
+    if unbalance <= best_unbalance:
+        best_unbalance = unbalance
+    else:
+        flip_edge(G, i, j)
+print(best_unbalance)
+draw_tourney(G, labels="markov",copeland_set_color="yellow", markov_set_color="red", figure_number=2)
+draw_tourney(G, labels="copeland",copeland_set_color="yellow", markov_set_color="red", figure_number=3)
+plt.show()
 
