@@ -414,6 +414,7 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     elif pos == "markov":
         _pos = get_equipos(n)
         order = sorted(range(n), key = lambda i : p[i], reverse= True)
+        print(order)
         pos = [_pos[order[i]] for i in range(n)]
     elif pos == "copeland":
         _pos = get_equipos(n)
@@ -612,7 +613,7 @@ for i in range(trials):
     else:
         flip_edge(G, i, j)
 print(best_unbalance)
-draw_tourney(G, labels="markov",copeland_set_color="yellow", markov_set_color="red", figure_number=2)
+draw_tourney(G, labels="markov",copeland_set_color="yellow", markov_set_color="red", figure_number=2, pos="markov")
 draw_tourney(G, labels="copeland",copeland_set_color="yellow", markov_set_color="red", figure_number=3)
 plt.show()
 
