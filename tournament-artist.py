@@ -1,3 +1,4 @@
+from operator import pos
 import numpy as np
 import random
 import networkx as nx
@@ -414,12 +415,11 @@ def draw_tourney(G,  copeland_set_color = None,  SE_winner_color = None, markov_
     elif pos == "markov":
         _pos = get_equipos(n)
         order = sorted(range(n), key = lambda i : p[i], reverse= True)
-        print(order)
-        pos = [_pos[order[i]] for i in range(n)]
+        pos = [_pos[order.index(i)] for i in range(n)] #TODO: this could be made more efficient.
     elif pos == "copeland":
         _pos = get_equipos(n)
         order = sorted(range(n), key = lambda i : co[i], reverse= True)
-        pos = [_pos[order[i]] for i in range(n)]
+        pos = [_pos[order.index(i)] for i in range(n)] #TODO: this could be made more efficient.
 
     
     # sets built-in label options
@@ -598,22 +598,23 @@ draw_tourney(G, labels="markov")"""
 
 n = 7
 G = create_random_G(n)
-trials = 10000
+trials = 1000
 best_unbalance = copeland_winner_markov_unbalance(G)
 print(best_unbalance)
 draw_tourney(G, labels="markov",copeland_set_color="yellow", markov_set_color="red", figure_number=1)
+draw_tourney(G, labels="markov",copeland_set_color="yellow", markov_set_color="red", figure_number=2, pos = "markov")
 
-for i in range(trials): 
-    i = random.randint(0, n-1)
-    j = (i + random.randint(1, n-1)) % n
-    flip_edge(G, i, j)
-    unbalance = copeland_winner_markov_unbalance(G)
-    if unbalance <= best_unbalance:
-        best_unbalance = unbalance
-    else:
-        flip_edge(G, i, j)
-print(best_unbalance)
-draw_tourney(G, labels="markov",copeland_set_color="yellow", markov_set_color="red", figure_number=2, pos="markov")
-draw_tourney(G, labels="copeland",copeland_set_color="yellow", markov_set_color="red", figure_number=3)
+# for i in range(trials): 
+#     i = random.randint(0, n-1)
+#     j = (i + random.randint(1, n-1)) % n
+#     flip_edge(G, i, j)
+#     unbalance = copeland_winner_markov_unbalance(G)
+#     if unbalance <= best_unbalance:
+#         best_unbalance = unbalance
+#     else:
+#         flip_edge(G, i, j)
+# print(best_unbalance)
+# draw_tourney(G, labels="markov",copeland_set_color="yellow", markov_set_color="red", figure_number=2, pos="markov")
+# draw_tourney(G, labels="copeland",copeland_set_color="yellow", markov_set_color="red", figure_number=3, pos="copeland")
 plt.show()
 
