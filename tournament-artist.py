@@ -29,6 +29,16 @@ def create_random_G(n):
             G[i][j] = 1
     return G
 
+def create_ordered_G(n):
+    """
+    Creates a graph with n players where lower indexed players beat higher indexed players.
+    """
+    G = np.zeros((n,n))
+    for j in range(n):
+        for i in range(j):
+            G[i][j] = 1
+    return G
+
 def create_cyclone_G(n):
     """
     Parameters:
@@ -61,7 +71,7 @@ def create_strong0_G(n):
         i = (i << 1) + 1
     return G
 
-def create_cylone_flip_G(n, delta, flip_mode = "first", seed = "default", zero_z = False):
+def create_flipped_cyclone_G(n, delta, flip_mode = "first", seed = "default", zero_z = False):
     """
     creates a cyclone tournament with a strong z vertex. a delta fraction of edges are flipped (all would have been inedges). The seed is the ordering of the graph. Set seed to default or to random. Set flip_mode to first or to random. If zero_z is set to true, the strong vertex is 0.
     """
@@ -496,7 +506,7 @@ pprint(rmx)
 #test that the border alogirthm does bad on radnomly seeded cyclone flip tournament
 """accuracy = 0
 for i in range(100):
-    G = create_cylone_flip_G(301, 3/7, flip_mode="first", seed="random", zero_z=True)
+    G = create_flipped_cyclone_G(301, 3/7, flip_mode="first", seed="random", zero_z=True)
     winners = play_border(G, 6)
     if 0 in winners:
         accuracy+=1
@@ -540,3 +550,20 @@ evec2 = infinity_normalize_vector(evec2)
 evec2 = round_vector(evec2, 3)
 # print(eval2, evec2)
 """
+
+s = 30
+G_I = create_cyclone_G(s)
+G_J = create_cyclone_G(s-1)
+
+Gscheme = create_ordered_G(4)
+flip_edge(Gscheme, 0, 1)
+flip_edge(Gscheme, 0, 3)
+flip_edge(Gscheme, 1, 2)
+flip_edge(Gscheme, 2, 3)
+
+G_i = create_ordered_G(1)
+G_j = create_ordered_G(1)
+G = tourney_product(Gscheme, [G_i, G_j, G_I, G_J])
+p = get_p(G)
+print(p[1]/p[0])
+draw_tourney(G, labels="copeland")
