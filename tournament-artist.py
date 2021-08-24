@@ -596,25 +596,57 @@ print(p[1]/p[0])
 G_J = create_cyclone_G(s-1)
 draw_tourney(G, labels="markov")"""
 
-n = 7
-G = create_random_G(n)
-trials = 1000
-best_unbalance = copeland_winner_markov_unbalance(G)
-print(best_unbalance)
-draw_tourney(G, labels="markov",copeland_set_color="yellow", markov_set_color="red", figure_number=1)
-draw_tourney(G, labels="markov",copeland_set_color="yellow", markov_set_color="red", figure_number=2, pos = "markov")
+n = 25
+supertrials = 50
+for _ in range(supertrials):
+    G = create_random_G(n)
+    trials = 1000
+    best_unbalance = copeland_winner_markov_unbalance(G)
+    print(best_unbalance)
+    # draw_tourney(G, labels="markov",copeland_set_color="yellow", markov_set_color="red", figure_number=1)
 
-# for i in range(trials): 
-#     i = random.randint(0, n-1)
-#     j = (i + random.randint(1, n-1)) % n
-#     flip_edge(G, i, j)
-#     unbalance = copeland_winner_markov_unbalance(G)
-#     if unbalance <= best_unbalance:
-#         best_unbalance = unbalance
-#     else:
-#         flip_edge(G, i, j)
-# print(best_unbalance)
+    for _ in range(trials): 
+        i = random.randint(0, n-1)
+        j = (i + random.randint(1, n-1)) % n
+        flip_edge(G, i, j)
+        unbalance = copeland_winner_markov_unbalance(G)
+        if unbalance <= best_unbalance:
+            best_unbalance = unbalance
+        else:
+            flip_edge(G, i, j)
+    print(best_unbalance)
+    if best_unbalance < 0.48:
+        print(G)
+        break
 # draw_tourney(G, labels="markov",copeland_set_color="yellow", markov_set_color="red", figure_number=2, pos="markov")
 # draw_tourney(G, labels="copeland",copeland_set_color="yellow", markov_set_color="red", figure_number=3, pos="copeland")
-plt.show()
+# plt.show()
 
+"""
+copeland winner markov score is 0.47 times markov winner's
+[[0. 1. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 1. 0. 0. 1. 0. 1. 0. 1. 0. 0. 1. 0. 0.]
+ [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 1. 0. 0. 0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
+ [1. 1. 0. 0. 0. 1. 0. 1. 0. 1. 1. 0. 1. 1. 1. 1. 0. 0. 0. 1. 1. 1. 1. 1. 0.]
+ [1. 1. 1. 0. 0. 1. 0. 1. 0. 1. 1. 0. 1. 1. 1. 1. 0. 0. 0. 1. 1. 1. 1. 1. 0.]
+ [1. 1. 1. 1. 0. 1. 0. 1. 0. 1. 1. 0. 1. 1. 1. 1. 0. 0. 0. 1. 1. 1. 1. 1. 0.]
+ [1. 1. 0. 0. 0. 0. 1. 1. 0. 1. 0. 0. 1. 0. 1. 0. 0. 0. 0. 1. 1. 0. 1. 0. 1.]
+ [1. 1. 1. 1. 1. 0. 0. 0. 0. 1. 1. 1. 1. 1. 1. 0. 1. 0. 0. 1. 0. 1. 1. 1. 1.]
+ [1. 1. 0. 0. 0. 0. 1. 0. 0. 1. 0. 0. 1. 0. 1. 1. 0. 0. 1. 1. 1. 1. 1. 0. 0.]
+ [1. 1. 1. 1. 1. 1. 1. 1. 0. 1. 0. 1. 1. 0. 1. 1. 0. 0. 1. 1. 1. 0. 1. 0. 0.]
+ [0. 1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 1. 0. 1. 0. 1. 0. 0. 1. 0. 0.]
+ [1. 1. 0. 0. 0. 1. 0. 1. 1. 1. 0. 0. 1. 1. 1. 1. 0. 0. 0. 1. 1. 1. 1. 1. 0.]
+ [1. 0. 1. 1. 1. 1. 0. 1. 0. 1. 1. 0. 0. 1. 0. 1. 0. 0. 1. 1. 1. 1. 1. 1. 1.]
+ [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 0. 1. 0. 1. 0. 1. 0. 0. 0. 0. 0.]
+ [1. 1. 0. 0. 0. 1. 0. 1. 1. 1. 0. 0. 1. 0. 1. 1. 0. 0. 0. 1. 1. 1. 1. 1. 0.]
+ [1. 1. 0. 0. 0. 0. 0. 0. 0. 1. 0. 1. 1. 0. 0. 1. 1. 0. 1. 1. 1. 0. 1. 0. 0.]
+ [0. 1. 0. 0. 0. 1. 1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 1. 0. 0. 0. 1. 0. 0. 1.]
+ [1. 1. 1. 1. 1. 1. 0. 1. 1. 1. 1. 1. 1. 1. 0. 0. 0. 0. 0. 1. 0. 1. 1. 1. 0.]
+ [0. 0. 1. 1. 1. 1. 1. 1. 1. 0. 1. 1. 0. 1. 1. 0. 1. 0. 1. 0. 1. 1. 0. 1. 1.]
+ [1. 1. 1. 1. 1. 1. 1. 0. 0. 1. 1. 0. 1. 1. 0. 1. 1. 0. 0. 0. 1. 0. 1. 1. 1.]
+ [0. 1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 1. 1. 0. 0. 0. 0. 0. 0.]
+ [1. 1. 0. 0. 0. 0. 1. 0. 0. 1. 0. 0. 1. 0. 0. 1. 1. 0. 0. 1. 0. 0. 1. 0. 1.]
+ [1. 1. 0. 0. 0. 1. 0. 0. 1. 1. 0. 0. 1. 0. 1. 0. 0. 0. 1. 1. 1. 0. 1. 0. 0.]
+ [0. 1. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 1. 0. 0. 1. 0. 1. 0. 1. 0. 0. 0. 0. 0.]
+ [1. 1. 0. 0. 0. 1. 0. 1. 1. 1. 0. 0. 1. 0. 1. 1. 0. 0. 0. 1. 1. 1. 1. 0. 0.]
+ [1. 1. 1. 1. 1. 0. 0. 1. 1. 1. 1. 0. 1. 1. 1. 0. 1. 0. 0. 1. 0. 1. 1. 1. 0.]]
+"""
